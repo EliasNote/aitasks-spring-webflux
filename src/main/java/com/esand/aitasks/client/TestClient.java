@@ -9,13 +9,14 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
 import java.time.Duration;
+import java.util.List;
 
 @Configuration
 public class TestClient {
 
     private final WebClient webClient;
 
-    private static String apiKey;
+    private final String apiKey;
 
     public TestClient(
             WebClient.Builder builder,
@@ -28,11 +29,17 @@ public class TestClient {
                 .build();
     }
 
-    public Flux<String> getResponse(String requestBody) {
+    public Flux<String> getResponse(String text) {
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder.queryParam("key", apiKey).build())
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(requestBody)
+                .bodyValue(
+                        new GoogleRequest(
+                                List.of(new GoogleRequest.Parts(
+                                        List.of(new GoogleRequest.Text(text))
+                                ))
+                        )
+                )
                 .retrieve()
                 .bodyToFlux(String.class);
     }
